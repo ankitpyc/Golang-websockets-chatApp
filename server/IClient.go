@@ -20,8 +20,9 @@ func newClient(conn *websocket.Conn, hub *SocketHub) *Client {
 type Message struct {
 	MessageType string `json:"messageType"`
 	Text        string `json:"text"`
+	UserName    string `json:"userName"`
 	ID          string `json:"userId"`
-	recieverID  string `json:"recieverID"`
+	RecieverID  string `json:"recieverID"`
 	Date        int64  `json:"date"`
 }
 

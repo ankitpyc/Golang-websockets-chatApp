@@ -54,7 +54,7 @@ func readWS(client *Client) {
 			log.Printf("Broadcasting")
 			client.hub.broadCastMessage <- chatMessage
 		case "CHAT_MESSAGE":
-			client.hub.connectionsMap[chatMessage.recieverID].message <- chatMessage
+			client.hub.connectionsMap[chatMessage.RecieverID].message <- chatMessage
 		}
 	}
 }

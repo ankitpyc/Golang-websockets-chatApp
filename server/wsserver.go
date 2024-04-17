@@ -54,6 +54,6 @@ func sendBroadCastMessage(hub *SocketHub, chatMessage Message) {
 
 func sendMessage(hub *SocketHub, chatMessage Message) {
 	byteMessage, _ := json.Marshal(chatMessage)
-	recieverConn := hub.connectionsMap[chatMessage.recieverID]
+	recieverConn := hub.connectionsMap[chatMessage.RecieverID]
 	recieverConn.conn.WriteMessage(websocket.TextMessage, byteMessage)
 }
