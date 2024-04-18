@@ -48,6 +48,7 @@ func readWS(client *Client) {
 		switch chatMessage.MessageType {
 		case "CONNECT_PING":
 			client.id = chatMessage.ID
+			client.username = chatMessage.UserName
 			client.hub.subcribe <- client
 			client.hub.broadCastMessage <- chatMessage
 		case "BROADCAST":

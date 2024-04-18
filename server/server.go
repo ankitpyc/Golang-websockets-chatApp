@@ -23,6 +23,7 @@ func StartWSServer(wg *sync.WaitGroup) {
 	go cache.InitRedisClient()
 	hub := newSocketHub()
 	go hub.startSocketHub()
+	go hub.notifyOnlineUsers()
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		log.Print("recieving connection")
 		serveWS(hub, w, r)

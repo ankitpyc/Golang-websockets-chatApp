@@ -3,10 +3,11 @@ package servers
 import "github.com/gorilla/websocket"
 
 type Client struct {
-	hub     *SocketHub
-	id      string
-	conn    *websocket.Conn
-	message chan Message
+	hub      *SocketHub
+	id       string
+	username string
+	conn     *websocket.Conn
+	message  chan Message
 }
 
 func newClient(conn *websocket.Conn, hub *SocketHub) *Client {

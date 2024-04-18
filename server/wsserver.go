@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -14,6 +15,28 @@ func newSocketHub() *SocketHub {
 		subcribe:         make(chan *Client),
 		broadCastMessage: make(chan Message),
 		connectionsMap:   make(map[string]*Client),
+	}
+}
+
+func (hub *SocketHub) notifyOnlineUsers() {
+	for {
+		select {
+		case <-time.After(15 * time.Second):
+			// Send a message to all WebSocket clients
+			log.Print("Broadcasting online statuses")
+			for _, client := range hub.connectionsMap {
+				fmt.Println("writing to client ", client.id)
+				message := Message{
+					MessageType: "CONNECT_PING",
+					UserName:    client.username,
+					ID:          client.id,
+					Text:        "",
+					RecieverID:  "",
+					Date:        0,
+				}
+				hub.broadCastMessage <- message
+			}
+		}
 	}
 }
 
