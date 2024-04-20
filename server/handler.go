@@ -22,11 +22,21 @@ func readWS(client *Client) {
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
 				fmt.Printf("Connection closed normally")
-				return
+
 			}
 
 			if websocket.IsCloseError(err, websocket.CloseGoingAway) {
+				delete(client.hub.connectionsMap, client.id)
 				fmt.Println("Connection closed Abruptly by", connection.RemoteAddr())
+				closeMessage := &Message{
+					MessageType: "CLOSE",
+					UserName:    client.username,
+					ID:          client.id,
+					Text:        "",
+					RecieverID:  "",
+					Date:        0,
+				}
+				client.hub.broadCastMessage <- *closeMessage
 				return
 			}
 
