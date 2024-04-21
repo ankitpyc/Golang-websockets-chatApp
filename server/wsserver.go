@@ -56,16 +56,6 @@ func (hub *SocketHub) startSocketHub() {
 	}
 }
 
-// func parseMessageAndSend(hub *SocketHub, message Message) {
-// 	var chatMessage Message
-// 	switch message.MessageType {
-// 	case "BROADCAST":
-// 		sendBroadCastMessage(hub, chatMessage)
-// 	case "CHAT_MESSAGE":
-// 		sendBroadCastMessage(hub, chatMessage)
-// 	}
-// }
-
 func sendBroadCastMessage(hub *SocketHub, chatMessage Message) {
 	log.Println("broadcasting")
 	jsonres, _ := json.Marshal(chatMessage)

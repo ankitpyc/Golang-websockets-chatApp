@@ -9,7 +9,7 @@ import (
 
 func StartTCPServer(wg *sync.WaitGroup) {
 	defer wg.Done()
-	tcpListener, err := net.Listen("tcp", ":4444")
+	tcpListener, err := net.Listen("tcp", ":4445")
 	if err != nil {
 		log.Fatal("error while listening for tcp connections at port 4444")
 	}
