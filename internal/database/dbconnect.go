@@ -1,7 +1,7 @@
 package databases
 
 import (
-	database_model "TCPServer/database/models"
+	database_model "TCPServer/internal/database/models"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
@@ -64,9 +64,9 @@ func ConnectToDB(wg *sync.WaitGroup) database_model.DBServer {
 	connectToDB(&dbserver)
 	defer wg.Done()
 	log.Print("Creating tables User,Chats,Messages")
-	connect_error := dbserver.DB.AutoMigrate(&database_model.User{}, &database_model.Chats{}, &database_model.Message{})
-	if connect_error != nil {
-		fmt.Fprintf(os.Stderr, "Error Creating database: %v\n", connect_error)
+	connectError := dbserver.DB.AutoMigrate(&database_model.User{}, &database_model.Chats{}, &database_model.Message{})
+	if connectError != nil {
+		fmt.Fprintf(os.Stderr, "Error Creating database: %v\n", connectError)
 		os.Exit(1)
 	}
 	return dbserver

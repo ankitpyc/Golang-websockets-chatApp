@@ -1,8 +1,8 @@
 package main
 
 import (
-	databases "TCPServer/database"
-	servers "TCPServer/server"
+	databases "TCPServer/internal/database"
+	servers "TCPServer/internal/server"
 	"sync"
 )
 

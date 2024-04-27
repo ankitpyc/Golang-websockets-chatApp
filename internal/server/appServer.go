@@ -1,8 +1,8 @@
 package servers
 
 import (
-	dbhandler "TCPServer/database/handlers"
-	models "TCPServer/database/models"
+	dbhandler "TCPServer/internal/database/handlers"
+	models "TCPServer/internal/database/models"
 
 	"log"
 	"sync"

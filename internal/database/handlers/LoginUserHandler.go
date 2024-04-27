@@ -1,7 +1,7 @@
 package databases
 
 import (
-	models "TCPServer/database/models"
+	models "TCPServer/internal/database/models"
 	"log"
 
 	"golang.org/x/crypto/bcrypt"

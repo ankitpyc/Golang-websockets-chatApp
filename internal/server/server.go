@@ -1,7 +1,7 @@
 package servers
 
 import (
-	cache "TCPServer/redis-cache"
+	cache "TCPServer/internal/redis-cache"
 	"fmt"
 	"log"
 	"net/http"
