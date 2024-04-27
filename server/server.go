@@ -21,14 +21,12 @@ var upgrader = websocket.Upgrader{
 func StartWSServer(wg *sync.WaitGroup) {
 	defer wg.Done()
 	go cache.InitRedisClient()
-	hub := newSocketHub()
+	hub := newSocketHub(&SocketHub{})
 	go hub.startSocketHub()
-	go hub.notifyOnlineUsers()
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		log.Print("recieving connection")
 		serveWS(hub, w, r)
 	})
-
 	fmt.Println("Listening for websockets on port ", 2019)
-	http.ListenAndServe(":2019", corsHandler(http.DefaultServeMux))
+	http.ListenAndServe(":2023", corsHandler(http.DefaultServeMux))
 }

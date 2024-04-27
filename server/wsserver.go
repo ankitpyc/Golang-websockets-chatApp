@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func newSocketHub() *SocketHub {
+func newSocketHub(socketHub *SocketHub) *SocketHub {
 	return &SocketHub{
 		unsubcribe:       make(chan *Client),
 		subcribe:         make(chan *Client),
@@ -41,6 +41,7 @@ func (hub *SocketHub) notifyOnlineUsers() {
 }
 
 func (hub *SocketHub) startSocketHub() {
+	go hub.notifyOnlineUsers()
 	for {
 		select {
 		case client := <-hub.subcribe:

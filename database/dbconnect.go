@@ -5,12 +5,30 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"os"
 	"sync"
 
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+func getDBConfig(db *database_model.DBServer) {
+	fmt.Println("Reading DB Configuration")
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("error loading env details : ", err)
+	}
+	config := &database_model.DBConfig{
+		DB_HOST:     os.Getenv("DB_HOST"),
+		DB_PORT:     os.Getenv("DB_PORT"),
+		DB_USER:     os.Getenv("DB_USER"),
+		DB_PASSWORD: os.Getenv("DB_PASSWORD"),
+		DB_NAME:     os.Getenv("DB_NAME"),
+	}
+	db.Config = config
+}
 
 func generateRandomChatID() (string, error) {
 	// Create a byte slice to hold the random bytes
@@ -29,22 +47,27 @@ func generateRandomChatID() (string, error) {
 	return randomString, nil
 }
 
-func ConnectToDB(wg *sync.WaitGroup) database_model.DBServer {
+func connectToDB(dbserver *database_model.DBServer) {
+	getDBConfig(dbserver)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Kolkata", dbserver.Config.DB_HOST, dbserver.Config.DB_USER, dbserver.Config.DB_PASSWORD, dbserver.Config.DB_NAME, dbserver.Config.DB_PORT)
 	fmt.Println("Connecting to Database")
-	dsn := "host=localhost user=postgres password=Bablu@12345 dbname=userinfo port=5432 sslmode=disable TimeZone=Asia/Kolkata"
 	conn, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
+	dbserver.DB = conn
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+func ConnectToDB(wg *sync.WaitGroup) database_model.DBServer {
+	var dbserver database_model.DBServer
+	connectToDB(&dbserver)
 	defer wg.Done()
-	dbConn := database_model.DBServer{DB: conn}
-
-	conn.AutoMigrate(&database_model.User{})
-	conn.AutoMigrate(&database_model.Chats{})
-	conn.AutoMigrate(&database_model.Message{})
-
-	return dbConn
-
+	log.Print("Creating tables User,Chats,Messages")
+	connect_error := dbserver.DB.AutoMigrate(&database_model.User{}, &database_model.Chats{}, &database_model.Message{})
+	if connect_error != nil {
+		fmt.Fprintf(os.Stderr, "Error Creating database: %v\n", connect_error)
+		os.Exit(1)
+	}
+	return dbserver
 }
