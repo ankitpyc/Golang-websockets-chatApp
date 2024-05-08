@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"sync"
+	"time"
 )
 
 func StartTCPServer(wg *sync.WaitGroup) {
@@ -19,5 +20,11 @@ func StartTCPServer(wg *sync.WaitGroup) {
 }
 
 func handleConnection(conn net.Conn) {
+	defer conn.Close()
+	for {
+		conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+
+	}
+
 	panic("unimplemented")
 }
