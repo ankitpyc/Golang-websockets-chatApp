@@ -12,9 +12,11 @@ func LoginDetails(dbServer *models.DBServer, user *models.User) (users *models.U
 	result := dbServer.DB.Where("email = ?", user.Email).First(&userLogin)
 	if result.Error != nil {
 		log.Println("Error ", result.Error)
+		return nil
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(userLogin.Password), []byte(user.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(userLogin.GetPassword()), []byte(user.GetPassword())); err != nil {
 		log.Println("Password does not match")
+		return nil
 	}
 	return userLogin
 }

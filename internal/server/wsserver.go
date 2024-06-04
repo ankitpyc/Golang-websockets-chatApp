@@ -3,6 +3,7 @@ package servers
 import (
 	"encoding/json"
 	"fmt"
+	"gorm.io/gorm/logger"
 	"log"
 	"time"
 
@@ -19,11 +20,12 @@ func newSocketHub(socketHub *SocketHub) *SocketHub {
 }
 
 func (hub *SocketHub) notifyOnlineUsers() {
+	ticker := time.NewTicker(10 * time.Second)
 	for {
 		select {
-		case <-time.After(15 * time.Second):
+		case <-ticker.C:
 			// Send a message to all WebSocket clients
-			log.Print("Broadcasting online statuses")
+			log.Println("Broadcasting online statuses")
 			for _, client := range hub.connectionsMap {
 				fmt.Println("writing to client ", client.id)
 				message := Message{
@@ -45,10 +47,14 @@ func (hub *SocketHub) startSocketHub() {
 	for {
 		select {
 		case client := <-hub.subcribe:
-			log.Printf("client subscribed")
+
+			log.Println(logger.Blue, "client subscribed : "+client.id)
+			hub.Lock()
 			hub.connectionsMap[client.id] = client
+			hub.Unlock()
+			break
 		case client := <-hub.unsubcribe:
-			log.Printf("client subscribed")
+			log.Printf("client unsubscribed")
 			delete(hub.connectionsMap, client.id)
 			client.conn.Close()
 		case messages := <-hub.broadCastMessage:
@@ -62,7 +68,10 @@ func sendBroadCastMessage(hub *SocketHub, chatMessage Message) {
 	jsonres, _ := json.Marshal(chatMessage)
 	for _, client := range hub.connectionsMap {
 		fmt.Println("writing to client ", client.id)
-		client.conn.WriteMessage(websocket.TextMessage, jsonres)
+		err := client.conn.WriteMessage(websocket.TextMessage, jsonres)
+		if err != nil {
+			return
+		}
 	}
 }
 

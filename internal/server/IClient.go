@@ -1,6 +1,9 @@
 package servers
 
-import "github.com/gorilla/websocket"
+import (
+	"github.com/gorilla/websocket"
+	"sync"
+)
 
 type Client struct {
 	hub      *SocketHub
@@ -28,6 +31,7 @@ type Message struct {
 }
 
 type SocketHub struct {
+	sync.Mutex
 	unsubcribe       chan *Client
 	subcribe         chan *Client
 	broadCastMessage chan Message

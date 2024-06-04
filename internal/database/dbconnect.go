@@ -53,21 +53,21 @@ func connectToDB(dbserver *database_model.DBServer) {
 	fmt.Println("Connecting to Database")
 	conn, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	dbserver.DB = conn
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+	if err != nil || conn == nil {
+		log.Printf("Unable to connect to database: %v \n", err)
 		os.Exit(1)
 	}
 }
 
 func ConnectToDB(wg *sync.WaitGroup) database_model.DBServer {
-	var dbserver database_model.DBServer
-	connectToDB(&dbserver)
+	var server database_model.DBServer
+	connectToDB(&server)
 	defer wg.Done()
-	log.Print("Creating tables User,Chats,Messages")
-	connectError := dbserver.DB.AutoMigrate(&database_model.User{}, &database_model.Chats{}, &database_model.Message{})
+	log.Print("Creating tables User,Chats,Messages \n")
+	connectError := server.DB.AutoMigrate(&database_model.User{}, &database_model.Chats{}, &database_model.Message{})
 	if connectError != nil {
-		fmt.Fprintf(os.Stderr, "Error Creating database: %v\n", connectError)
+		log.Printf("Error Creating database: %v\n", connectError)
 		os.Exit(1)
 	}
-	return dbserver
+	return server
 }

@@ -13,8 +13,9 @@ func hashPassword(password string) (string, error) {
 }
 
 func CreateUser(dbServer *models.DBServer, user *models.User) *models.User {
-	hashedPassword, _ := hashPassword(user.Password)
-	userData := &models.User{Username: user.Username, Email: user.Email, Password: hashedPassword}
+	hashedPassword, _ := hashPassword(user.GetPassword())
+	userData := &models.User{Username: user.Username, Email: user.Email}
+	userData.SetPassword(hashedPassword)
 	result := dbServer.DB.Create(&userData)
 	if result.Error != nil {
 		log.Println("Error ", result.Error)

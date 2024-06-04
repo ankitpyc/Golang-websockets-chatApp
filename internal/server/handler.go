@@ -48,15 +48,15 @@ func readWS(client *Client) {
 			fmt.Println("Error while reading message", err)
 			return
 		}
-		error := json.Unmarshal(message, &chatMessage)
-		if error != nil {
-			fmt.Print(error)
+		err = json.Unmarshal(message, &chatMessage)
+		if err != nil {
+			fmt.Print(err)
 			os.Exit(0)
 		}
 		log.Println("message is ", chatMessage.ID)
-
 		switch chatMessage.MessageType {
 		case "CONNECT_PING":
+			log.Printf("Broadcasting user the message")
 			client.id = chatMessage.ID
 			client.username = chatMessage.UserName
 			client.hub.subcribe <- client
@@ -73,15 +73,17 @@ func readWS(client *Client) {
 func WriteMessage(client *Client) {
 	defer func() {
 		client.hub.unsubcribe <- client
-		client.conn.Close()
+		err := client.conn.Close()
+		if err != nil {
+			return
+		}
 	}()
 	for {
 		select {
 		case mess := <-client.message:
-			log.Printf("writing to client")
 			byteMessage, err := json.Marshal(mess)
 			if err != nil {
-				fmt.Println("error while convering")
+				log.Println("error while marshalling message", err)
 			}
 			client.conn.WriteMessage(websocket.TextMessage, byteMessage)
 		}
@@ -91,7 +93,6 @@ func WriteMessage(client *Client) {
 
 func serveWS(hub *SocketHub, w http.ResponseWriter, r *http.Request) {
 	connection, _ := upgrader.Upgrade(w, r, nil)
-
 	client := newClient(connection, hub)
 	//individual client threads to read and write from socket
 	go readWS(client)

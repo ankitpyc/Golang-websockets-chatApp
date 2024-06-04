@@ -1,14 +1,12 @@
 package servers
 
 import (
-	dbhandler "TCPServer/internal/database/handlers"
 	models "TCPServer/internal/database/models"
-
-	"log"
-	"sync"
-
+	"TCPServer/internal/server/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"log"
+	"sync"
 )
 
 func StartWebServer(wg *sync.WaitGroup, db *models.DBServer) {
@@ -17,36 +15,13 @@ func StartWebServer(wg *sync.WaitGroup, db *models.DBServer) {
 		AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin",
 		AllowOrigins:     "http://localhost:3000",
 		AllowCredentials: true,
+		ExposeHeaders:    "Authorization",
 		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
 	}))
 	defer wg.Done()
-
-	app.Post("/fetchUserAccount", func(c *fiber.Ctx) error {
-		var userPayload models.User
-		if err := c.BodyParser(&userPayload); err != nil {
-			return err
-		}
-		user := dbhandler.CreateUser(db, &userPayload)
-		return c.JSON(user)
-	})
-
-	app.Post("/LoginUser", func(c *fiber.Ctx) error {
-		var userPayload models.User
-		if err := c.BodyParser(&userPayload); err != nil {
-			return err
-		}
-		user := dbhandler.LoginDetails(db, &userPayload)
-		return c.JSON(user)
-	})
-
-	app.Post("/createUserAccount", func(c *fiber.Ctx) error {
-		var payload CreateAccountRequest
-		if err := c.BodyParser(&payload); err != nil {
-			return err
-		}
-		return c.JSON(payload)
-	})
-
+	app.Post("/LoginUser", LoginHandler(db))
+	protected := app.Group("/api", middleware.Authorize)
+	protected.Post("/api/fetchUserAccount", HandleFetchData(db))
+	protected.Post("/api/createUserAccount", CreateUserHandler(db))
 	log.Fatal(app.Listen(":3023"))
-	log.Print("Listeing for http request")
 }
