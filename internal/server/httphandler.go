@@ -13,8 +13,7 @@ func HandleFetchData(db *models.DBServer) fiber.Handler {
 		if err := c.BodyParser(&userPayload); err != nil {
 			return err
 		}
-		user := dbhandler.CreateUser(db, &userPayload)
-		return c.JSON(user)
+		return c.JSON(fiber.Map{})
 	}
 }
 
@@ -36,12 +35,12 @@ func LoginHandler(db *models.DBServer) fiber.Handler {
 }
 
 func CreateUserHandler(db *models.DBServer) fiber.Handler {
-
 	return func(c *fiber.Ctx) error {
-		var payload CreateAccountRequest
-		if err := c.BodyParser(&payload); err != nil {
+		var userPayload models.User
+		if err := c.BodyParser(&userPayload); err != nil {
 			return err
 		}
-		return c.JSON(payload)
+		user := dbhandler.CreateUser(db, &userPayload)
+		return c.JSON(user)
 	}
 }

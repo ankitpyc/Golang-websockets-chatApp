@@ -20,8 +20,8 @@ func StartWebServer(wg *sync.WaitGroup, db *models.DBServer) {
 	}))
 	defer wg.Done()
 	app.Post("/LoginUser", LoginHandler(db))
+	app.Post("/api/createUserAccount", CreateUserHandler(db))
 	protected := app.Group("/api", middleware.Authorize)
 	protected.Post("/api/fetchUserAccount", HandleFetchData(db))
-	protected.Post("/api/createUserAccount", CreateUserHandler(db))
 	log.Fatal(app.Listen(":3023"))
 }

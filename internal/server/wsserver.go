@@ -25,16 +25,14 @@ func (hub *SocketHub) notifyOnlineUsers() {
 		select {
 		case <-ticker.C:
 			// Send a message to all WebSocket clients
-			log.Println("Broadcasting online statuses")
 			for _, client := range hub.connectionsMap {
-				fmt.Println("writing to client ", client.id)
 				message := Message{
 					MessageType: "CONNECT_PING",
 					UserName:    client.username,
 					ID:          client.id,
 					Text:        "",
-					RecieverID:  "",
-					Date:        0,
+					ReceiverID:  "",
+					Date:        "0",
 				}
 				hub.broadCastMessage <- message
 			}
@@ -47,11 +45,8 @@ func (hub *SocketHub) startSocketHub() {
 	for {
 		select {
 		case client := <-hub.subcribe:
-
 			log.Println(logger.Blue, "client subscribed : "+client.id)
-			hub.Lock()
 			hub.connectionsMap[client.id] = client
-			hub.Unlock()
 			break
 		case client := <-hub.unsubcribe:
 			log.Printf("client unsubscribed")
@@ -64,11 +59,12 @@ func (hub *SocketHub) startSocketHub() {
 }
 
 func sendBroadCastMessage(hub *SocketHub, chatMessage Message) {
-	log.Println("broadcasting")
 	jsonres, _ := json.Marshal(chatMessage)
 	for _, client := range hub.connectionsMap {
 		fmt.Println("writing to client ", client.id)
+		client.Lock()
 		err := client.conn.WriteMessage(websocket.TextMessage, jsonres)
+		client.Unlock()
 		if err != nil {
 			return
 		}
@@ -77,6 +73,6 @@ func sendBroadCastMessage(hub *SocketHub, chatMessage Message) {
 
 func sendMessage(hub *SocketHub, chatMessage Message) {
 	byteMessage, _ := json.Marshal(chatMessage)
-	recieverConn := hub.connectionsMap[chatMessage.RecieverID]
+	recieverConn := hub.connectionsMap[chatMessage.ReceiverID]
 	recieverConn.conn.WriteMessage(websocket.TextMessage, byteMessage)
 }

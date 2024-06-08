@@ -37,8 +37,6 @@ N
 internal/server/auth/Claims.go,6/2/623f340a8d536eaf36c44353ef7ad8382bffbfb5
 W
 'internal/server/middleware/authorize.go,0/e/0e05fc51195e372311396f5cb227b5b915894551
-W
-'internal/server/handlers/httphandler.go,1/b/1bae9372b792a3584c46d4e5c5ec40c2228c0fed
 N
 internal/server/httphandler.go,3/e/3ee56f5ef49e1ef204de5dedc2259ad947f7329f
 W

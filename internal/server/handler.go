@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -22,7 +23,6 @@ func readWS(client *Client) {
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
 				fmt.Printf("Connection closed normally")
-
 			}
 
 			if websocket.IsCloseError(err, websocket.CloseGoingAway) {
@@ -33,8 +33,8 @@ func readWS(client *Client) {
 					UserName:    client.username,
 					ID:          client.id,
 					Text:        "",
-					RecieverID:  "",
-					Date:        0,
+					ReceiverID:  "",
+					Date:        "0",
 				}
 				client.hub.broadCastMessage <- *closeMessage
 				return
@@ -64,8 +64,23 @@ func readWS(client *Client) {
 		case "BROADCAST":
 			log.Printf("Broadcasting")
 			client.hub.broadCastMessage <- chatMessage
+		case "ACK":
+			log.Printf("Recieved ACK")
+			client.hub.connectionsMap[chatMessage.ReceiverID].message <- chatMessage
 		case "CHAT_MESSAGE":
-			client.hub.connectionsMap[chatMessage.RecieverID].message <- chatMessage
+			mess := Message{
+				MessageType:           "ACK",
+				Text:                  "",
+				MessageId:             chatMessage.MessageId,
+				MessageDeliveryStatus: "SENT",
+				UserName:              chatMessage.UserName,
+				ID:                    chatMessage.ReceiverID,
+				ReceiverID:            chatMessage.ID,
+				Date:                  "0",
+			}
+			client.message <- mess
+			time.Sleep(5000 * time.Millisecond)
+			client.hub.connectionsMap[chatMessage.ReceiverID].message <- chatMessage
 		}
 	}
 }
@@ -85,7 +100,12 @@ func WriteMessage(client *Client) {
 			if err != nil {
 				log.Println("error while marshalling message", err)
 			}
-			client.conn.WriteMessage(websocket.TextMessage, byteMessage)
+			client.Lock()
+			err = client.conn.WriteMessage(websocket.TextMessage, byteMessage)
+			client.Unlock()
+			if err != nil {
+				return
+			}
 		}
 	}
 

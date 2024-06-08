@@ -5,7 +5,13 @@ import (
 	"sync"
 )
 
+type Acknowledgement struct {
+	messageId string
+	status    int
+}
+
 type Client struct {
+	sync.RWMutex
 	hub      *SocketHub
 	id       string
 	username string
@@ -22,16 +28,18 @@ func newClient(conn *websocket.Conn, hub *SocketHub) *Client {
 }
 
 type Message struct {
-	MessageType string `json:"messageType"`
-	Text        string `json:"text"`
-	UserName    string `json:"userName"`
-	ID          string `json:"userId"`
-	RecieverID  string `json:"recieverID"`
-	Date        int64  `json:"date"`
+	MessageType           string `json:"messageType"`
+	Text                  string `json:"text"`
+	MessageId             string `json:"messageId"`
+	UserName              string `json:"userName"`
+	ID                    string `json:"userId"`
+	ReceiverID            string `json:"receiverID"`
+	Date                  string `json:"date"`
+	MessageDeliveryStatus string `json:"MessageStatus"`
 }
 
 type SocketHub struct {
-	sync.Mutex
+	sync.RWMutex
 	unsubcribe       chan *Client
 	subcribe         chan *Client
 	broadCastMessage chan Message
