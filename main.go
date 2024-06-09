@@ -3,6 +3,8 @@ package main
 import (
 	databases "TCPServer/internal/database"
 	servers "TCPServer/internal/server"
+	"os"
+	"os/signal"
 	"sync"
 )
 
@@ -14,5 +16,8 @@ func main() {
 	go servers.StartTCPServer(&wg)
 	go servers.StartWSServer(&wg)
 	// keeps the main thread waiting and doesn't lets it exit
-	wg.Wait()
+	terminate := make(chan os.Signal, 1)
+	signal.Notify(terminate, os.Interrupt)
+	<-terminate
+
 }

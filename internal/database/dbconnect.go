@@ -52,11 +52,11 @@ func connectToDB(dbserver *database_model.DBServer) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Kolkata", dbserver.Config.DB_HOST, dbserver.Config.DB_USER, dbserver.Config.DB_PASSWORD, dbserver.Config.DB_NAME, dbserver.Config.DB_PORT)
 	fmt.Println("Connecting to Database")
 	conn, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	dbserver.DB = conn
 	if err != nil || conn == nil {
 		log.Printf("Unable to connect to database: %v \n", err)
 		os.Exit(1)
 	}
+	dbserver.DB = conn
 }
 
 func ConnectToDB(wg *sync.WaitGroup) database_model.DBServer {
@@ -70,4 +70,8 @@ func ConnectToDB(wg *sync.WaitGroup) database_model.DBServer {
 		os.Exit(1)
 	}
 	return server
+}
+
+func CloseDatabaseConnection(db *database_model.DBServer) {
+	gorm.St
 }
