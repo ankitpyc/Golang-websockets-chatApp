@@ -1,6 +1,8 @@
 package servers
 
 import (
+	models "TCPServer/internal/database/models"
+	"TCPServer/internal/domain"
 	"github.com/gorilla/websocket"
 	"sync"
 )
@@ -16,32 +18,22 @@ type Client struct {
 	id       string
 	username string
 	conn     *websocket.Conn
-	message  chan Message
+	message  chan domain.Message
 }
 
 func newClient(conn *websocket.Conn, hub *SocketHub) *Client {
 	return &Client{
 		hub:     hub,
 		conn:    conn,
-		message: make(chan Message),
+		message: make(chan domain.Message),
 	}
-}
-
-type Message struct {
-	MessageType           string `json:"messageType"`
-	Text                  string `json:"text"`
-	MessageId             string `json:"messageId"`
-	UserName              string `json:"userName"`
-	ID                    string `json:"userId"`
-	ReceiverID            string `json:"receiverID"`
-	Date                  string `json:"date"`
-	MessageDeliveryStatus string `json:"MessageStatus"`
 }
 
 type SocketHub struct {
 	sync.RWMutex
+	DB               *models.DBServer
 	unsubcribe       chan *Client
 	subcribe         chan *Client
-	broadCastMessage chan Message
+	broadCastMessage chan domain.Message
 	connectionsMap   map[string]*Client
 }

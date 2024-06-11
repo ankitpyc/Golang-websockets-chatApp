@@ -1,6 +1,7 @@
 package servers
 
 import (
+	"TCPServer/internal/domain"
 	"encoding/json"
 	"fmt"
 	"gorm.io/gorm/logger"
@@ -14,7 +15,7 @@ func newSocketHub(socketHub *SocketHub) *SocketHub {
 	return &SocketHub{
 		unsubcribe:       make(chan *Client),
 		subcribe:         make(chan *Client),
-		broadCastMessage: make(chan Message),
+		broadCastMessage: make(chan domain.Message),
 		connectionsMap:   make(map[string]*Client),
 	}
 }
@@ -26,7 +27,7 @@ func (hub *SocketHub) notifyOnlineUsers() {
 		case <-ticker.C:
 			// Send a message to all WebSocket clients
 			for _, client := range hub.connectionsMap {
-				message := Message{
+				message := domain.Message{
 					MessageType: "CONNECT_PING",
 					UserName:    client.username,
 					ID:          client.id,
@@ -58,7 +59,7 @@ func (hub *SocketHub) startSocketHub() {
 	}
 }
 
-func sendBroadCastMessage(hub *SocketHub, chatMessage Message) {
+func sendBroadCastMessage(hub *SocketHub, chatMessage domain.Message) {
 	jsonres, _ := json.Marshal(chatMessage)
 	for _, client := range hub.connectionsMap {
 		fmt.Println("writing to client ", client.id)
@@ -71,7 +72,7 @@ func sendBroadCastMessage(hub *SocketHub, chatMessage Message) {
 	}
 }
 
-func sendMessage(hub *SocketHub, chatMessage Message) {
+func sendMessage(hub *SocketHub, chatMessage domain.Message) {
 	byteMessage, _ := json.Marshal(chatMessage)
 	recieverConn := hub.connectionsMap[chatMessage.ReceiverID]
 	recieverConn.conn.WriteMessage(websocket.TextMessage, byteMessage)

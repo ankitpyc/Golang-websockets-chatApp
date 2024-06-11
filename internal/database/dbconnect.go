@@ -63,15 +63,11 @@ func ConnectToDB(wg *sync.WaitGroup) database_model.DBServer {
 	var server database_model.DBServer
 	connectToDB(&server)
 	defer wg.Done()
-	log.Print("Creating tables User,Chats,Messages \n")
+	log.Print("Creating tables User, Chats, Messages \n")
 	connectError := server.DB.AutoMigrate(&database_model.User{}, &database_model.Chats{}, &database_model.Message{})
 	if connectError != nil {
-		log.Printf("Error Creating database: %v\n", connectError)
+		log.Printf("Error Opening/Creating connection to databases: %v\n", connectError)
 		os.Exit(1)
 	}
 	return server
-}
-
-func CloseDatabaseConnection(db *database_model.DBServer) {
-	gorm.St
 }

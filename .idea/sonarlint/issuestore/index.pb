@@ -45,3 +45,17 @@ L
 internal/server/tcpServer.go,1/6/16f14857c18cac55f5d13c919234da6867af73f3
 T
 $internal/database/models/DBServer.go,9/d/9d9dbdad404765ba763cf7fffac02f23d7f9fb58
+Y
+)internal/database/handlers/ChatHandler.go,e/7/e78c237188bafb61a1e572e56f17b2ab906e6e9e
+Q
+!internal/database/models/Chats.go,8/6/86802e2b4119c3c5bf6b1494a377e9f1695a4cc2
+U
+%internal/database/models/UserChats.go,b/0/b0804f17e5c29ed7176e59e6e3efefd4672237f0
+T
+$internal/database/models/DBConfig.go,2/f/2f69ac4f3f3ac5b490c9a8d5932401d636d5897a
+S
+#internal/database/models/Message.go,7/3/7362de3606c72216a24d40cd67a6b07a84356733
+a
+1internal/server/messageUtil/MessageTransformer.go,1/5/15b4cd7060be58db9b53d5b19fbd54decb1339fa
+J
+internal/domain/Message.go,1/4/143b39d884fb5d956f4d2ce9a43e07dba0305daf

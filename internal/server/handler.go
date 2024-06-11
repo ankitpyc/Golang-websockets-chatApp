@@ -1,14 +1,14 @@
 package servers
 
 import (
+	databases "TCPServer/internal/database/handlers"
+	"TCPServer/internal/domain"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 	"os"
-	"time"
-
-	"github.com/gorilla/websocket"
 )
 
 func readWS(client *Client) {
@@ -18,17 +18,17 @@ func readWS(client *Client) {
 		client.conn.Close()
 	}()
 	for {
-		var chatMessage Message
+		var chatMessage domain.Message
 		_, message, err := client.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
 				fmt.Printf("Connection closed normally")
 			}
-
+			// TODO : Need to handle concurrent deletes
 			if websocket.IsCloseError(err, websocket.CloseGoingAway) {
 				delete(client.hub.connectionsMap, client.id)
 				fmt.Println("Connection closed Abruptly by", connection.RemoteAddr())
-				closeMessage := &Message{
+				closeMessage := &domain.Message{
 					MessageType: "CLOSE",
 					UserName:    client.username,
 					ID:          client.id,
@@ -68,24 +68,14 @@ func readWS(client *Client) {
 			log.Printf("Recieved ACK")
 			client.hub.connectionsMap[chatMessage.ReceiverID].message <- chatMessage
 		case "CHAT_MESSAGE":
-			mess := Message{
-				MessageType:           "ACK",
-				Text:                  "",
-				MessageId:             chatMessage.MessageId,
-				MessageDeliveryStatus: "SENT",
-				UserName:              chatMessage.UserName,
-				ID:                    chatMessage.ReceiverID,
-				ReceiverID:            chatMessage.ID,
-				Date:                  "0",
-			}
-			client.message <- mess
-			time.Sleep(5000 * time.Millisecond)
 			client.hub.connectionsMap[chatMessage.ReceiverID].message <- chatMessage
 		}
 	}
 }
 
 func WriteMessage(client *Client) {
+	log.Println("Writing message go routine triggered")
+	chatHandler := databases.ChatHandler{DBServer: client.hub.DB}
 	defer func() {
 		client.hub.unsubcribe <- client
 		err := client.conn.Close()
@@ -96,11 +86,15 @@ func WriteMessage(client *Client) {
 	for {
 		select {
 		case mess := <-client.message:
+			client.Lock()
+			// Need to write message to db
+			err := chatHandler.PersistMessages(&mess)
+			ack, _ := chatHandler.SendAcknowledgement(&mess)
+			client.hub.connectionsMap[ack.ReceiverID].message <- *ack
 			byteMessage, err := json.Marshal(mess)
 			if err != nil {
 				log.Println("error while marshalling message", err)
 			}
-			client.Lock()
 			err = client.conn.WriteMessage(websocket.TextMessage, byteMessage)
 			client.Unlock()
 			if err != nil {

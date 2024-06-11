@@ -1,6 +1,7 @@
 package servers
 
 import (
+	models "TCPServer/internal/database/models"
 	cache "TCPServer/internal/redis-cache"
 	"fmt"
 	"log"
@@ -18,13 +19,14 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func StartWSServer(wg *sync.WaitGroup) {
+func StartWSServer(wg *sync.WaitGroup, db *models.DBServer) {
 	defer wg.Done()
 	go cache.InitRedisClient()
 	hub := newSocketHub(&SocketHub{})
+	hub.DB = db
 	go hub.startSocketHub()
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		log.Print("recieving connection")
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		log.Print("receiving connection")
 		serveWS(hub, w, r)
 	})
 	fmt.Println("Listening for websockets on port ", 2019)
