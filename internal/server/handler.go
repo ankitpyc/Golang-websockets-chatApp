@@ -87,19 +87,27 @@ func WriteMessage(client *Client) {
 		select {
 		case mess := <-client.message:
 			client.Lock()
-			// Need to write message to db
-			err := chatHandler.PersistMessages(&mess)
-			ack, _ := chatHandler.SendAcknowledgement(&mess)
-			client.hub.connectionsMap[ack.ReceiverID].message <- *ack
-			byteMessage, err := json.Marshal(mess)
-			if err != nil {
-				log.Println("error while marshalling message", err)
+			if mess.MessageType == "ACK" {
+				log.Printf("Recieved ACK %s -> %s , Status : %s ", mess.ID, mess.ReceiverID, mess.MessageDeliveryStatus)
+				byteMessage, _ := json.Marshal(mess)
+				err := client.conn.WriteMessage(websocket.TextMessage, byteMessage)
+				if err != nil {
+					return
+				}
+			} else {
+				err := chatHandler.PersistMessages(&mess)
+				ack, _ := chatHandler.SendAcknowledgement(&mess)
+				client.hub.connectionsMap[ack.ReceiverID].message <- *ack
+				byteMessage, err := json.Marshal(mess)
+				if err != nil {
+					log.Println("error while marshalling message", err)
+				}
+				err = client.conn.WriteMessage(websocket.TextMessage, byteMessage)
+				if err != nil {
+					return
+				}
 			}
-			err = client.conn.WriteMessage(websocket.TextMessage, byteMessage)
 			client.Unlock()
-			if err != nil {
-				return
-			}
 		}
 	}
 

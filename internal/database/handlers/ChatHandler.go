@@ -2,7 +2,7 @@ package databases
 
 import (
 	databases "TCPServer/internal/database/models"
-	domain "TCPServer/internal/domain"
+	"TCPServer/internal/domain"
 	"TCPServer/internal/server/messageUtil"
 	"fmt"
 	"github.com/google/uuid"
