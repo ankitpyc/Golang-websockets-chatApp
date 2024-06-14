@@ -1,7 +1,7 @@
 package servers
 
 import (
-	models "TCPServer/internal/database/models"
+	models "TCPServer/internal/database"
 	"TCPServer/internal/server/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"

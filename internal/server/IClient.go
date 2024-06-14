@@ -1,7 +1,7 @@
 package servers
 
 import (
-	models "TCPServer/internal/database/models"
+	models "TCPServer/internal/database"
 	"TCPServer/internal/domain"
 	"github.com/gorilla/websocket"
 	"sync"

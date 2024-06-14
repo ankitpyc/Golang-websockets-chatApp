@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func getDBConfig(db *database_model.DBServer) {
+func getDBConfig(db *DBServer) {
 	fmt.Println("Reading DB Configuration")
 	err := godotenv.Load(".env")
 	if err != nil {
@@ -47,20 +47,21 @@ func generateRandomChatID() (string, error) {
 	return randomString, nil
 }
 
-func connectToDB(dbserver *database_model.DBServer) {
-	getDBConfig(dbserver)
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Kolkata", dbserver.Config.DB_HOST, dbserver.Config.DB_USER, dbserver.Config.DB_PASSWORD, dbserver.Config.DB_NAME, dbserver.Config.DB_PORT)
+func connectToDB(server *DBServer) {
+	getDBConfig(server)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Kolkata", server.Config.DB_HOST, server.Config.DB_USER, server.Config.DB_PASSWORD, server.Config.DB_NAME, server.Config.DB_PORT)
 	fmt.Println("Connecting to Database")
 	conn, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil || conn == nil {
 		log.Printf("Unable to connect to database: %v \n", err)
 		os.Exit(1)
 	}
-	dbserver.DB = conn
+	server.DB = conn
+	server.InitRepository()
 }
 
-func ConnectToDB(wg *sync.WaitGroup) database_model.DBServer {
-	var server database_model.DBServer
+func ConnectToDB(wg *sync.WaitGroup) DBServer {
+	var server DBServer
 	connectToDB(&server)
 	defer wg.Done()
 	log.Print("Creating tables User, Chats, Messages \n")

@@ -1,7 +1,7 @@
 package servers
 
 import (
-	models "TCPServer/internal/database/models"
+	models "TCPServer/internal/database"
 	cache "TCPServer/internal/redis-cache"
 	"fmt"
 	"log"

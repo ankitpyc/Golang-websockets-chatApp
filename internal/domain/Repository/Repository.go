@@ -2,10 +2,13 @@
 
 package Repository
 
-import databases "TCPServer/internal/database/models"
+import (
+	databases "TCPServer/internal/database/models"
+	"context"
+)
 
 type UserRepositoryInf interface {
-	CreateUser(user databases.User) (uint8, error)
+	CreateUser(ctx context.Context, user databases.User) (uint8, error)
 	RemoveUser(user databases.User) (bool, error)
 	Login(user databases.User) (bool, error)
 	UpdateUserImage() (bool, error)

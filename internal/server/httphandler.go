@@ -1,13 +1,13 @@
 package servers
 
 import (
-	dbhandler "TCPServer/internal/database/handlers"
+	"TCPServer/internal/database"
 	models "TCPServer/internal/database/models"
 	"TCPServer/internal/server/auth"
 	"github.com/gofiber/fiber/v2"
 )
 
-func HandleFetchData(db *models.DBServer) fiber.Handler {
+func HandleFetchData(db *databases.DBServer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var userPayload models.User
 		if err := c.BodyParser(&userPayload); err != nil {
@@ -17,30 +17,34 @@ func HandleFetchData(db *models.DBServer) fiber.Handler {
 	}
 }
 
-func LoginHandler(db *models.DBServer) fiber.Handler {
+func LoginHandler(db *databases.DBServer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var userPayload models.User
 		if err := c.BodyParser(&userPayload); err != nil {
 			c.Status(fiber.StatusBadRequest)
 			return err
 		}
-		user := dbhandler.LoginDetails(db, &userPayload)
-		token := auth.GetToken("token_valid")
+		user, err := db.UserRepo.Login(&userPayload)
+		if err != nil && err.Error() == "invalid User Name and Password" {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
+		}
 		if user == nil {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
 		}
+		//TODO : Secret Needs to be Externalized
+		token := auth.GetToken("token_valid")
 		c.Set("Authorization", "Bearer "+token)
 		return c.Status(200).JSON(fiber.Map{"user": user})
 	}
 }
 
-func CreateUserHandler(db *models.DBServer) fiber.Handler {
+func CreateUserHandler(db *databases.DBServer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var userPayload models.User
 		if err := c.BodyParser(&userPayload); err != nil {
 			return err
 		}
-		user := dbhandler.CreateUser(db, &userPayload)
+		user, _ := db.UserRepo.CreateUser(&userPayload)
 		return c.JSON(user)
 	}
 }

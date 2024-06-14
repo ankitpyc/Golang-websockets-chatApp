@@ -27,7 +27,9 @@ func readWS(client *Client) {
 			}
 			// TODO: Handle concurrent deletes
 			if websocket.IsCloseError(err, websocket.CloseGoingAway) {
+				client.hub.Lock()
 				delete(client.hub.connectionsMap, client.id) // Remove client from connections map
+				client.hub.Unlock()
 				fmt.Println("Connection closed abruptly by", connection.RemoteAddr())
 				closeMessage := &domain.Message{
 					MessageType: "CLOSE",
@@ -97,7 +99,8 @@ func WriteMessage(client *Client) {
 					return
 				}
 			} else {
-				err := chatHandler.PersistMessages(&mess)                 // Persist message to database
+				err := chatHandler.PersistMessages(&mess) // Persist message to database
+				//TODO : this probably needs to be e moved to a service (eg :- Nessaging Service)
 				ack, _ := chatHandler.SendAcknowledgement(&mess)          // Send ACK for the message
 				client.hub.connectionsMap[ack.ReceiverID].message <- *ack // Send ACK to receiver
 				byteMessage, err := json.Marshal(mess)                    // Marshal message to JSON

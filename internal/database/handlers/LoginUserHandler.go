@@ -1,13 +1,14 @@
 package databases
 
 import (
+	"TCPServer/internal/database"
 	models "TCPServer/internal/database/models"
 	"log"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-func LoginDetails(dbServer *models.DBServer, user *models.User) (users *models.User) {
+func LoginDetails(dbServer *databases.DBServer, user *models.User) (users *models.User) {
 	userLogin := &models.User{}
 	result := dbServer.DB.Where("email = ?", user.Email).First(&userLogin)
 	if result.Error != nil {

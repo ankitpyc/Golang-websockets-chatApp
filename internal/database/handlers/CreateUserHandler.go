@@ -1,6 +1,7 @@
 package databases
 
 import (
+	"TCPServer/internal/database"
 	models "TCPServer/internal/database/models"
 	"log"
 
@@ -12,7 +13,7 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func CreateUser(dbServer *models.DBServer, user *models.User) *models.User {
+func CreateUser(dbServer *databases.DBServer, user *models.User) *models.User {
 	hashedPassword, _ := hashPassword(user.GetPassword())
 	userData := &models.User{Username: user.Username, Email: user.Email}
 	userData.SetPassword(hashedPassword)

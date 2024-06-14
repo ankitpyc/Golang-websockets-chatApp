@@ -50,11 +50,16 @@ func (hub *SocketHub) startSocketHub() {
 		select {
 		case client := <-hub.subcribe:
 			log.Println(logger.Blue, "client subscribed : "+client.id)
+			client.hub.Lock()
 			hub.connectionsMap[client.id] = client // Add client to connections map
+			client.hub.Unlock()
 		case client := <-hub.unsubcribe:
 			log.Printf("client unsubscribed")
+			client.hub.Lock()
 			delete(hub.connectionsMap, client.id) // Remove client from connections map
-			client.conn.Close()                   // Close the client's WebSocket connection
+			_ = client.conn.Close()
+			client.hub.Lock()
+			// Close the client's WebSocket connection
 		case messages := <-hub.broadCastMessage:
 			sendBroadCastMessage(hub, messages) // Broadcast the message to all clients
 		}

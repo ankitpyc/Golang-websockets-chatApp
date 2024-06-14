@@ -1,6 +1,7 @@
 package databases
 
 import (
+	databases2 "TCPServer/internal/database"
 	databases "TCPServer/internal/database/models"
 	"TCPServer/internal/domain"
 	"TCPServer/internal/server/messageUtil"
@@ -15,7 +16,7 @@ type ChatHandlerInf interface {
 }
 
 type ChatHandler struct {
-	*databases.DBServer
+	*databases2.DBServer
 }
 
 func NewChatHandler() *ChatHandler {
@@ -57,7 +58,7 @@ func (ch *ChatHandler) SendAcknowledgement(message *domain.Message) (*domain.Mes
 		ID:                    message.ReceiverID,
 		ReceiverID:            message.ID,
 		MessageType:           "ACK",
-		Text:                  "OYE",
+		Text:                  "",
 		MessageId:             message.MessageId,
 		MessageDeliveryStatus: "SENT",
 		Date:                  message.Date,
