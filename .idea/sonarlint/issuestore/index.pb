@@ -77,3 +77,7 @@ X
 (internal/domain/Repository/Repository.go,d/e/de4838dc3be8ea1a28f393b4f271e61a7fd13558
 \
 ,internal/domain/Repository/UserRepository.go,c/e/ce6034bc729abdf854bd8331638077fbbc36f3f1
+\
+,internal/domain/Repository/ChatRepository.go,f/b/fbbd7cde89afef15007f2f4cae47bb09ace868e3
+_
+/internal/domain/Repository/MessageRepository.go,2/b/2b34238c15c145917c17389fbe1fe217c0241ddc

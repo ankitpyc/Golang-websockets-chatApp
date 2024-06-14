@@ -7,16 +7,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func HandleFetchData(db *databases.DBServer) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		var userPayload models.User
-		if err := c.BodyParser(&userPayload); err != nil {
-			return err
-		}
-		return c.JSON(fiber.Map{})
-	}
-}
-
 func LoginHandler(db *databases.DBServer) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var userPayload models.User
@@ -46,5 +36,19 @@ func CreateUserHandler(db *databases.DBServer) fiber.Handler {
 		}
 		user, _ := db.UserRepo.CreateUser(&userPayload)
 		return c.JSON(user)
+	}
+}
+
+func FetchAllChats(db *databases.DBServer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		var messages models.Message
+		if err := c.BodyParser(&messages); err != nil {
+			return err
+		}
+		chats, err := db.ChatRepo.FetchChats(messages.ChatId)
+		if err != nil {
+			return err
+		}
+		return c.JSON(chats)
 	}
 }

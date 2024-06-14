@@ -10,9 +10,10 @@ type DBServer struct {
 	DB       *gorm.DB
 	Config   *databases.DBConfig
 	UserRepo *repo.UserRepository
-	chatRepo *repo.ChatRepositoryInf
+	ChatRepo *repo.ChatRepository
 }
 
 func (server *DBServer) InitRepository() {
 	server.UserRepo = repo.NewUserRepository(server.DB)
+	server.ChatRepo = repo.NewChatRepository(server.DB)
 }

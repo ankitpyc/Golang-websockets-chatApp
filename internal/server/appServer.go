@@ -2,7 +2,6 @@ package servers
 
 import (
 	models "TCPServer/internal/database"
-	"TCPServer/internal/server/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"log"
@@ -21,7 +20,7 @@ func StartWebServer(wg *sync.WaitGroup, db *models.DBServer) {
 	defer wg.Done()
 	app.Post("/LoginUser", LoginHandler(db))
 	app.Post("/api/createUserAccount", CreateUserHandler(db))
-	protected := app.Group("/api", middleware.Authorize)
-	protected.Post("/api/fetchUserAccount", HandleFetchData(db))
+	app.Post("/api/fetchAllChats", FetchAllChats(db))
+
 	log.Fatal(app.Listen(":3023"))
 }

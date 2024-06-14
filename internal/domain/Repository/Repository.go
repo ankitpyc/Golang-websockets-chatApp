@@ -16,5 +16,5 @@ type UserRepositoryInf interface {
 }
 
 type ChatRepositoryInf interface {
-	FetchAllChats(user databases.User) ([]databases.Chats, error)
+	FetchAllChats(user string) ([]databases.Chats, error)
 }
