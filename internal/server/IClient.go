@@ -3,14 +3,10 @@ package servers
 import (
 	models "TCPServer/internal/database"
 	"TCPServer/internal/domain"
-	"github.com/gorilla/websocket"
 	"sync"
-)
 
-type Acknowledgement struct {
-	messageId string
-	status    int
-}
+	"github.com/gorilla/websocket"
+)
 
 type Client struct {
 	sync.RWMutex

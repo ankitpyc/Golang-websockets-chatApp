@@ -45,7 +45,21 @@ func FetchAllChats(db *databases.DBServer) fiber.Handler {
 		if err := c.BodyParser(&messages); err != nil {
 			return err
 		}
-		chats, err := db.ChatRepo.FetchChats(messages.ChatId)
+		chats, err := db.ChatRepo.FetchChats(messages.ChatID)
+		if err != nil {
+			return err
+		}
+		return c.JSON(chats)
+	}
+}
+
+func FetchUserChats(db *databases.DBServer) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		var user models.User
+		if err := c.BodyParser(&user); err != nil {
+			return err
+		}
+		chats, err := db.ChatRepo.LoadAllUserChats(user.UserId)
 		if err != nil {
 			return err
 		}

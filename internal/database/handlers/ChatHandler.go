@@ -6,7 +6,8 @@ import (
 	"TCPServer/internal/domain"
 	"TCPServer/internal/server/messageUtil"
 	"fmt"
-	"github.com/google/uuid"
+	"strconv"
+	"time"
 )
 
 type ChatHandlerInf interface {
@@ -27,29 +28,35 @@ func (ch *ChatHandler) PersistMessages(message *domain.Message) error {
 	if message.MessageType == "ACK" {
 		return nil
 	}
-
-	if message.ChatId == "" {
+	ids, _ := ch.ChatRepo.FetchChatByUser(message.ID, message.ReceiverID)
+	message.ChatId = strconv.FormatUint(uint64(ids), 10)
+	fmt.Printf("Created Id is %s", ids)
+	if ids == 0 {
 		id, err := ch.CreateChat(message)
-		message.ChatId = id
+		message.ChatId = string(id)
 		if err != nil {
 			return err
 		}
 	}
 	chatMessage := messageUtil.ConvertToChatMessage(message)
-	ch.DB.Create(&chatMessage)
+	ch.MessageRepo.SaveMessage(&chatMessage)
 	return nil
 }
 
-func (ch *ChatHandler) CreateChat(message *domain.Message) (string, error) {
-	chat := databases.Chats{
-		ChatId:    uuid.New().String(),
-		UserID1:   message.ID,
-		UserID2:   message.ReceiverID,
-		IsDeleted: false,
+func (ch *ChatHandler) CreateChat(message *domain.Message) (uint, error) {
+	chat := databases.Chat{
+		UserID1:      message.ID,
+		UserID2:      message.ReceiverID,
+		IsDeleted:    false,
+		LastActivity: time.Now(),
 	}
-	id := ch.DB.Create(&chat)
-	fmt.Println(id)
-	return chat.ChatId, nil
+	result := ch.DB.Create(&chat)
+
+	if result.Error != nil {
+		fmt.Print(result.Error)
+		return 0, nil
+	}
+	return chat.ID, nil
 }
 
 func (ch *ChatHandler) SendAcknowledgement(message *domain.Message) (*domain.Message, error) {

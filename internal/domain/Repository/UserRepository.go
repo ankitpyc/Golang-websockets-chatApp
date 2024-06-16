@@ -5,10 +5,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 	"log"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type UserRepository struct {
@@ -27,8 +28,10 @@ func hashPassword(password string) (string, error) {
 }
 
 func (userRepo *UserRepository) CreateUser(user *databases.User) (*databases.User, error) {
-	ctx, cancel := context.WithTimeout(userRepo.ctx, time.Second*5)
+	ctx, cancel := context.WithTimeout(userRepo.ctx, time.Second*15)
 	defer cancel()
+	hashedPassword, _ := hashPassword(user.Password)
+	user.Password = hashedPassword
 	result := userRepo.db.WithContext(ctx).Create(&user)
 	if result.Error != nil {
 		_ = fmt.Errorf("error while creating user %v \n", result.Error.Error())
@@ -52,10 +55,10 @@ func (userRepo *UserRepository) GetUserByEmailId(email string) (*databases.User,
 }
 
 func (userRepo *UserRepository) Login(user *databases.User) (*databases.User, error) {
-	ctx, cancel := context.WithTimeout(userRepo.ctx, time.Second*2)
+	ctx, cancel := context.WithTimeout(userRepo.ctx, time.Second*30)
 	dbUser := &databases.User{}
 	defer cancel()
-	result := userRepo.db.WithContext(ctx).Model(databases.User{Email: user.Email}).Limit(1).First(&dbUser)
+	result := userRepo.db.WithContext(ctx).Where("email = ?", user.Email).Limit(1).First(&dbUser)
 	// handle specific error while logging in
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("invalid User Name and Password")

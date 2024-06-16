@@ -16,5 +16,11 @@ type UserRepositoryInf interface {
 }
 
 type ChatRepositoryInf interface {
-	FetchAllChats(user string) ([]databases.Chats, error)
+	FetchChats(chatId string) ([]*databases.Message, error)
+	LoadAllUserChats(user *databases.User) ([]*databases.Chat, error)
+	FetchChatByUser(user1 string, user2 string)
+}
+
+type MessageRepositoryInf interface {
+	SaveUserChat(chat *databases.Message) *databases.Message
 }

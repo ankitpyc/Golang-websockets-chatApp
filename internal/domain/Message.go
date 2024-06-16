@@ -8,6 +8,6 @@ type Message struct {
 	ID                    string `json:"userId"`
 	ReceiverID            string `json:"receiverID"`
 	Date                  string `json:"date"`
-	ChatId                string `json:"chatId"`
+	ChatId                string `json:"chatId,omitempty"`
 	MessageDeliveryStatus string `json:"MessageStatus"`
 }

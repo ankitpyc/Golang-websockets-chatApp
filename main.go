@@ -15,7 +15,7 @@ func main() {
 	go servers.StartWebServer(&wg, &dbConn)
 	go servers.StartTCPServer(&wg)
 	go servers.StartWSServer(&wg, &dbConn)
-	// keeps the main thread waiting and doesn't lets it exit
+	// keeps the main thread waiting and doesn't let it exit
 	terminate := make(chan os.Signal, 1)
 	signal.Notify(terminate, os.Interrupt)
 	<-terminate

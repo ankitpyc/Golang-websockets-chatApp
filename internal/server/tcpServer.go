@@ -25,6 +25,4 @@ func handleConnection(conn net.Conn) {
 		conn.SetReadDeadline(time.Now().Add(5 * time.Second))
 
 	}
-
-	panic("unimplemented")
 }

@@ -11,9 +11,10 @@ const (
 )
 
 type Message struct {
-	gorm.Model
-	ChatId     string        `gorm:"column:chat_id"`
-	SenderID   string        `gorm:"column:sender_id"` // Custom foreign key name
+	*gorm.Model
+	MessageID  string        `gorm:"primaryKey"`
+	ChatID     uint          `gorm:"column:chat_id"` // Matches the column name in the database
+	SenderID   string        `gorm:"column:sender_id"`
 	ReceiverID string        `gorm:"column:receiver_id"`
 	Status     MessageStatus `gorm:"column:status"`
 	Text       string        `gorm:"column:message"`

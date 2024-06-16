@@ -5,10 +5,11 @@ import (
 	"TCPServer/internal/domain"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/websocket"
 )
 
 // readWS reads messages from the WebSocket connection of a client.
@@ -21,6 +22,7 @@ func readWS(client *Client) {
 	for {
 		var chatMessage domain.Message
 		_, message, err := client.conn.ReadMessage() // Read message from WebSocket
+		fmt.Print("Reading Mwsa")
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
 				fmt.Printf("Connection closed normally")
@@ -56,7 +58,6 @@ func readWS(client *Client) {
 			fmt.Print(err)
 			os.Exit(0)
 		}
-		log.Println("message is ", chatMessage.ID)
 		switch chatMessage.MessageType {
 		case "CONNECT_PING":
 			log.Printf("Broadcasting user the message")
@@ -99,8 +100,9 @@ func WriteMessage(client *Client) {
 					return
 				}
 			} else {
-				err := chatHandler.PersistMessages(&mess) // Persist message to database
+				_ = chatHandler.PersistMessages(&mess) // Persist message to database
 				//TODO : this probably needs to be e moved to a service (eg :- Nessaging Service)
+				fmt.Print("chat id is ", mess.ChatId)
 				ack, _ := chatHandler.SendAcknowledgement(&mess)          // Send ACK for the message
 				client.hub.connectionsMap[ack.ReceiverID].message <- *ack // Send ACK to receiver
 				byteMessage, err := json.Marshal(mess)                    // Marshal message to JSON

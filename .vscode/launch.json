@@ -1,0 +1,10 @@
+{
+    // ...
+    "configuration": [
+      {
+        // ...
+        "program": "./main.go"
+        // ...
+      }
+    ],
+  }

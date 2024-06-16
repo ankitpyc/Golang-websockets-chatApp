@@ -51,7 +51,9 @@ func connectToDB(server *DBServer) {
 	getDBConfig(server)
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Kolkata", server.Config.DB_HOST, server.Config.DB_USER, server.Config.DB_PASSWORD, server.Config.DB_NAME, server.Config.DB_PORT)
 	fmt.Println("Connecting to Database")
-	conn, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	conn, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	if err != nil || conn == nil {
 		log.Printf("Unable to connect to database: %v \n", err)
 		os.Exit(1)
@@ -65,7 +67,7 @@ func ConnectToDB(wg *sync.WaitGroup) DBServer {
 	connectToDB(&server)
 	defer wg.Done()
 	log.Print("Creating tables User, Chats, Messages \n")
-	connectError := server.DB.AutoMigrate(&database_model.User{}, &database_model.Chats{}, &database_model.Message{})
+	connectError := server.DB.AutoMigrate(&database_model.User{}, &database_model.Chat{}, &database_model.Message{})
 	if connectError != nil {
 		log.Printf("Error Opening/Creating connection to databases: %v\n", connectError)
 		os.Exit(1)
