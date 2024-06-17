@@ -30,10 +30,9 @@ func (ch *ChatHandler) PersistMessages(message *domain.Message) error {
 	}
 	ids, _ := ch.ChatRepo.FetchChatByUser(message.ID, message.ReceiverID)
 	message.ChatId = strconv.FormatUint(uint64(ids), 10)
-	fmt.Printf("Created Id is %s", ids)
 	if ids == 0 {
 		id, err := ch.CreateChat(message)
-		message.ChatId = string(id)
+		message.ChatId = strconv.FormatUint(uint64(id), 10)
 		if err != nil {
 			return err
 		}
