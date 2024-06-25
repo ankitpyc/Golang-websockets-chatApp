@@ -2,7 +2,7 @@ package servers
 
 import "net/http"
 
-func corsHandler(h http.Handler) http.Handler {
+func CorsHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", "*")

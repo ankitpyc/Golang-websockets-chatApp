@@ -2,10 +2,11 @@ package servers
 
 import (
 	models "TCPServer/internal/database"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 	"log"
 	"sync"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func StartWebServer(wg *sync.WaitGroup, db *models.DBServer) {

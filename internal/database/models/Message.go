@@ -12,10 +12,10 @@ const (
 
 type Message struct {
 	*gorm.Model
-	MessageID  string        `gorm:"primaryKey"`
-	ChatID     uint          `gorm:"column:chat_id"` // Matches the column name in the database
-	SenderID   string        `gorm:"column:sender_id"`
-	ReceiverID string        `gorm:"column:receiver_id"`
-	Status     MessageStatus `gorm:"column:status"`
-	Text       string        `gorm:"column:message"`
+	MessageID  string        `gorm:"primaryKey" json:"messageId"`
+	ChatID     uint          `gorm:"column:chat_id" json:"chatId"` // Matches the column name in the database
+	SenderID   string        `gorm:"column:sender_id" json:"senderId"`
+	ReceiverID string        `gorm:"column:receiver_id" json:"receiverId"`
+	Status     MessageStatus `gorm:"column:status" json:"status"`
+	Text       string        `gorm:"column:message" json:"message"`
 }

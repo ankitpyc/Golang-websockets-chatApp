@@ -80,10 +80,3 @@ func sendBroadCastMessage(hub *SocketHub, chatMessage domain.Message) {
 		}
 	}
 }
-
-// sendMessage sends a message to a specific client identified by ReceiverID.
-func sendMessage(hub *SocketHub, chatMessage domain.Message) {
-	byteMessage, _ := json.Marshal(chatMessage) // Marshal the message to JSON
-	recieverConn := hub.connectionsMap[chatMessage.ReceiverID]
-	recieverConn.conn.WriteMessage(websocket.TextMessage, byteMessage) // Write message to WebSocket
-}

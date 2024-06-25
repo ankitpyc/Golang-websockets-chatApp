@@ -3,9 +3,10 @@ package middleware
 import (
 	"TCPServer/internal/server/auth"
 	"fmt"
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm/logger"
-	"log"
 )
 
 func Authorize(c *fiber.Ctx) error {

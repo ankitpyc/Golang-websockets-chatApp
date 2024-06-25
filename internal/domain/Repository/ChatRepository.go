@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"gorm.io/gorm"
@@ -24,19 +25,24 @@ func (cr *ChatRepository) FetchChats(chatId uint) ([]*databases.Message, error) 
 	ctx, cancel := context.WithTimeout(cr.ctx, time.Second*5)
 	mess := make([]*databases.Message, 0)
 	defer cancel()
-	result := cr.db.WithContext(ctx).Limit(20).Where("chat_id = ?", chatId).First(&mess)
+	result := cr.db.WithContext(ctx).Limit(20).Where("chat_id = ?", chatId).Order("created_at").Find(&mess)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("failed")
 	}
 	return mess, nil
 }
 
-func (cr *ChatRepository) LoadAllUserChats(userid string) ([]*databases.Chat, error) {
-	ctx, cancel := context.WithTimeout(cr.ctx, time.Second*5)
-	chats := make([]*databases.Chat, 0)
+func (cr *ChatRepository) LoadAllUserChats(userid uint) ([]databases.Chat, error) {
+	ctx, cancel := context.WithTimeout(cr.ctx, time.Second*12)
+	chats := make([]databases.Chat, 0)
+	uid := strconv.FormatUint(uint64(userid), 10)
 	defer cancel()
-	result := cr.db.WithContext(ctx).Where("user_id1 = ? OR user_id2 = ?", userid, userid).
-		Preload("Messages").
+	result := cr.db.WithContext(ctx).Where("user_id_1 = ? OR user_id_2 = ?", uid, uid).
+		Preload("User1").
+		Preload("User2").
+		Preload("Messages", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at asc").Limit(30)
+		}).
 		Find(&chats)
 	if result.Error != nil {
 		return nil, errors.New("error fetching user chats")
@@ -54,7 +60,6 @@ func (cr *ChatRepository) FetchChatByUser(user1 string, user2 string) (uint, err
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return 0, nil
-
 	}
 	if result.Error != nil {
 		return 0, nil
