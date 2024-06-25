@@ -22,7 +22,6 @@ func readWS(client *Client) {
 	for {
 		var chatMessage domain.Message
 		_, message, err := client.conn.ReadMessage() // Read message from WebSocket
-		fmt.Print("Reading Mwsa")
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
 				fmt.Printf("Connection closed normally")
@@ -49,7 +48,6 @@ func readWS(client *Client) {
 				fmt.Println("Connection closed abnormally by", connection.RemoteAddr())
 				return
 			}
-
 			fmt.Println("Error while reading message", err)
 			return
 		}
@@ -79,7 +77,6 @@ func readWS(client *Client) {
 
 // WriteMessage handles writing messages to the WebSocket connection of a client.
 func WriteMessage(client *Client) {
-	log.Println("Writing message go routine triggered")
 	chatHandler := databases.ChatHandler{DBServer: client.hub.DB}
 	defer func() {
 		client.hub.unsubcribe <- client // Unsubscribe the client from the hub
