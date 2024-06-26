@@ -48,6 +48,7 @@ func readWS(client *Client) {
 				fmt.Println("Connection closed abnormally by", connection.RemoteAddr())
 				return
 			}
+
 			fmt.Println("Error while reading message", err)
 			return
 		}
