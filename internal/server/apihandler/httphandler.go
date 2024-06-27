@@ -1,4 +1,4 @@
-package servers
+package apihandler
 
 import (
 	databases "TCPServer/internal/database"
@@ -69,6 +69,7 @@ func FetchUserChats(db *databases.DBServer) fiber.Handler {
 		if err != nil {
 			return err
 		}
+		time.Sleep(10000 * time.Millisecond)
 		return c.JSON(formatUserResponse(chats, user))
 	}
 }

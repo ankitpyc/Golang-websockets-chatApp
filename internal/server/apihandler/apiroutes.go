@@ -23,6 +23,5 @@ func StartWebServer(wg *sync.WaitGroup, db *models.DBServer) {
 	app.Post("/api/createUserAccount", CreateUserHandler(db))
 	app.Post("/api/fetchAllChats", FetchAllChats(db))
 	app.Post("/api/LoadUserChats", FetchUserChats(db))
-
 	log.Fatal(app.Listen(":3023"))
 }

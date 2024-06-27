@@ -2,7 +2,7 @@ package servers
 
 import (
 	databases "TCPServer/internal/database/handlers"
-	"TCPServer/internal/domain"
+	dto "TCPServer/internal/domain/dto"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -20,7 +20,7 @@ func readWS(client *Client) {
 		client.conn.Close()             // Close the WebSocket connection
 	}()
 	for {
-		var chatMessage domain.Message
+		var chatMessage dto.Message
 		_, message, err := client.conn.ReadMessage() // Read message from WebSocket
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
@@ -32,7 +32,7 @@ func readWS(client *Client) {
 				delete(client.hub.connectionsMap, client.id) // Remove client from connections map
 				client.hub.Unlock()
 				fmt.Println("Connection closed abruptly by", connection.RemoteAddr())
-				closeMessage := &domain.Message{
+				closeMessage := &dto.Message{
 					MessageType: "CLOSE",
 					UserName:    client.username,
 					ID:          client.id,

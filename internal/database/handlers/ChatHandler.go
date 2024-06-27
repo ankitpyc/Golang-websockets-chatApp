@@ -1,9 +1,9 @@
 package databases
 
 import (
-	databases2 "TCPServer/internal/database"
-	databases "TCPServer/internal/database/models"
-	"TCPServer/internal/domain"
+	databases "TCPServer/internal/database"
+	models "TCPServer/internal/database/models"
+	"TCPServer/internal/domain/dto"
 	"TCPServer/internal/server/messageUtil"
 	"fmt"
 	"strconv"
@@ -11,20 +11,20 @@ import (
 )
 
 type ChatHandlerInf interface {
-	PersistMessages(message *databases.Message) error
-	CreateChat(message *databases.Message) error
-	SendAcknowledgment(message *databases.Message) error
+	PersistMessages(message *models.Message) error
+	CreateChat(message *models.Message) error
+	SendAcknowledgment(message *models.Message) error
 }
 
 type ChatHandler struct {
-	*databases2.DBServer
+	*databases.DBServer
 }
 
 func NewChatHandler() *ChatHandler {
 	return &ChatHandler{}
 }
 
-func (ch *ChatHandler) PersistMessages(message *domain.Message) error {
+func (ch *ChatHandler) PersistMessages(message *dto.Message) error {
 	if message.MessageType == "ACK" {
 		return nil
 	}
@@ -42,8 +42,8 @@ func (ch *ChatHandler) PersistMessages(message *domain.Message) error {
 	return nil
 }
 
-func (ch *ChatHandler) CreateChat(message *domain.Message) (uint, error) {
-	chat := databases.Chat{
+func (ch *ChatHandler) CreateChat(message *dto.Message) (uint, error) {
+	chat := models.Chat{
 		UserID1:      message.ID,
 		UserID2:      message.ReceiverID,
 		IsDeleted:    false,
@@ -58,8 +58,8 @@ func (ch *ChatHandler) CreateChat(message *domain.Message) (uint, error) {
 	return chat.ID, nil
 }
 
-func (ch *ChatHandler) SendAcknowledgement(message *domain.Message) (*domain.Message, error) {
-	chat := &domain.Message{
+func (ch *ChatHandler) SendAcknowledgement(message *dto.Message) (*dto.Message, error) {
+	chat := &dto.Message{
 		ChatId:                message.ChatId,
 		ID:                    message.ReceiverID,
 		ReceiverID:            message.ID,

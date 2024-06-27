@@ -2,13 +2,13 @@ package messageUtil
 
 import (
 	databases "TCPServer/internal/database/models"
-	"TCPServer/internal/domain"
+	dto "TCPServer/internal/domain/dto"
 	"strconv"
 
 	"github.com/google/uuid"
 )
 
-func ConvertToChatMessage(message *domain.Message) databases.Message {
+func ConvertToChatMessage(message *dto.Message) databases.Message {
 	chatId, _ := StringToUint(message.ChatId)
 	mess := databases.Message{
 		MessageID:  uuid.New().String(),

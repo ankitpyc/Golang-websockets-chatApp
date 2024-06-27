@@ -1,4 +1,4 @@
-package domain
+package dto
 
 type Message struct {
 	MessageType           string `json:"messageType"`

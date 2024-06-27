@@ -23,6 +23,5 @@ func handleConnection(conn net.Conn) {
 	defer conn.Close()
 	for {
 		conn.SetReadDeadline(time.Now().Add(5 * time.Second))
-
 	}
 }

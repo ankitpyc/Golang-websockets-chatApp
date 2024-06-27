@@ -1,4 +1,4 @@
-package servers
+package dto
 
 type CreateAccountRequest struct {
 	UserName string `json:"userName"`

@@ -23,7 +23,7 @@ var upgrader = websocket.Upgrader{
 func StartWSServer(wg *sync.WaitGroup, db *models.DBServer) {
 	defer wg.Done()
 	go cache.InitRedisClient()
-	hub := newSocketHub(&SocketHub{})
+	hub := newSocketHub()
 	hub.DB = db
 	go hub.startSocketHub()
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

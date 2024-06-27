@@ -1,7 +1,7 @@
 package servers
 
 import (
-	"TCPServer/internal/domain"
+	"TCPServer/internal/domain/dto"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -13,12 +13,12 @@ import (
 )
 
 // newSocketHub initializes a new SocketHub and returns a pointer to it.
-func newSocketHub(socketHub *SocketHub) *SocketHub {
+func newSocketHub() *SocketHub {
 	return &SocketHub{
-		unsubcribe:       make(chan *Client),        // Channel for unsubscribing clients
-		subcribe:         make(chan *Client),        // Channel for subscribing clients
-		broadCastMessage: make(chan domain.Message), // Channel for broadcasting messages
-		connectionsMap:   make(map[string]*Client),  // Map to hold client connections
+		unsubcribe:       make(chan *Client),       // Channel for unsubscribing clients
+		subcribe:         make(chan *Client),       // Channel for subscribing clients
+		broadCastMessage: make(chan dto.Message),   // Channel for broadcasting messages
+		connectionsMap:   make(map[string]*Client), // Map to hold client connections
 	}
 }
 
@@ -30,7 +30,7 @@ func (hub *SocketHub) notifyOnlineUsers() {
 		case <-ticker.C:
 			// Send a message to all WebSocket clients
 			for _, client := range hub.connectionsMap {
-				message := domain.Message{
+				message := dto.Message{
 					MessageType: "CONNECT_PING",
 					UserName:    client.username,
 					ID:          client.id,
@@ -68,7 +68,7 @@ func (hub *SocketHub) startSocketHub() {
 }
 
 // sendBroadCastMessage sends a broadcast message to all connected clients.
-func sendBroadCastMessage(hub *SocketHub, chatMessage domain.Message) {
+func sendBroadCastMessage(hub *SocketHub, chatMessage dto.Message) {
 	jsonres, _ := json.Marshal(chatMessage) // Marshal the message to JSON
 	for _, client := range hub.connectionsMap {
 		fmt.Println("writing to client ", client.id)
