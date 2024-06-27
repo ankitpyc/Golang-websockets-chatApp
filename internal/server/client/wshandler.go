@@ -16,6 +16,7 @@ import (
 func readWS(client *Client) {
 	connection := client.Conn
 	defer func() {
+		fmt.Println("Unsubsribing trigger readWs closed")
 		client.Hub.Unsubcribe <- client // Unsubscribe the client from the hub
 		client.Conn.Close()             // Close the WebSocket connection
 	}()
@@ -80,6 +81,7 @@ func readWS(client *Client) {
 func WriteMessage(client *Client) {
 	chatHandler := databases.ChatHandler{DBServer: client.Hub.DB}
 	defer func() {
+		fmt.Println("Unsubsribing trigger WriteWS closed")
 		client.Hub.Unsubcribe <- client // Unsubscribe the client from the hub
 		err := client.Conn.Close()      // Close the WebSocket connection
 		if err != nil {
