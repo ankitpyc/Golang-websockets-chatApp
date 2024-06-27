@@ -1,4 +1,4 @@
-package servers
+package apihandler
 
 import (
 	models "TCPServer/internal/database"

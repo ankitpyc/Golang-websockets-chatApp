@@ -4,31 +4,22 @@ import (
 	models "TCPServer/internal/database"
 	corsmiddleware "TCPServer/internal/middleware/cors"
 	cache "TCPServer/internal/redis-cache"
+	client "TCPServer/internal/server/client"
 	"fmt"
 	"log"
 	"net/http"
 	"sync"
-
-	"github.com/gorilla/websocket"
 )
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  2048,
-	WriteBufferSize: 2048,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
 
 func StartWSServer(wg *sync.WaitGroup, db *models.DBServer) {
 	defer wg.Done()
 	go cache.InitRedisClient()
-	hub := newSocketHub()
+	hub := client.NewSocketHub()
 	hub.DB = db
-	go hub.startSocketHub()
+	go hub.StartSocketHub()
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		log.Print("receiving connection")
-		serveWS(hub, w, r)
+		client.ServeWS(&hub, w, r)
 	})
 	fmt.Println("Listening for websockets on port ", 2019)
 	http.ListenAndServe(":2023", corsmiddleware.CorsHandler(http.DefaultServeMux))

@@ -10,26 +10,26 @@ import (
 
 type Client struct {
 	sync.RWMutex
-	hub      *SocketHub
-	id       string
-	username string
-	conn     *websocket.Conn
-	message  chan dto.Message
+	Hub      *SocketHub
+	Id       string
+	Username string
+	Conn     *websocket.Conn
+	Message  chan dto.Message
 }
 
 func newClient(conn *websocket.Conn, hub *SocketHub) *Client {
 	return &Client{
-		hub:     hub,
-		conn:    conn,
-		message: make(chan dto.Message),
+		Hub:     hub,
+		Conn:    conn,
+		Message: make(chan dto.Message),
 	}
 }
 
 type SocketHub struct {
 	sync.RWMutex
 	DB               *models.DBServer
-	unsubcribe       chan *Client
-	subcribe         chan *Client
-	broadCastMessage chan dto.Message
-	connectionsMap   map[string]*Client
+	Unsubcribe       chan *Client
+	Subcribe         chan *Client
+	BroadCastMessage chan dto.Message
+	ConnectionsMap   map[string]*Client
 }

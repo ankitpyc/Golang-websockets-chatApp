@@ -14,33 +14,33 @@ import (
 
 // readWS reads messages from the WebSocket connection of a client.
 func readWS(client *Client) {
-	connection := client.conn
+	connection := client.Conn
 	defer func() {
-		client.hub.unsubcribe <- client // Unsubscribe the client from the hub
-		client.conn.Close()             // Close the WebSocket connection
+		client.Hub.Unsubcribe <- client // Unsubscribe the client from the hub
+		client.Conn.Close()             // Close the WebSocket connection
 	}()
 	for {
 		var chatMessage dto.Message
-		_, message, err := client.conn.ReadMessage() // Read message from WebSocket
+		_, message, err := client.Conn.ReadMessage() // Read message from WebSocket
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
 				fmt.Printf("Connection closed normally")
 			}
 			// TODO: Handle concurrent deletes
 			if websocket.IsCloseError(err, websocket.CloseGoingAway) {
-				client.hub.Lock()
-				delete(client.hub.connectionsMap, client.id) // Remove client from connections map
-				client.hub.Unlock()
+				client.Hub.Lock()
+				delete(client.Hub.ConnectionsMap, client.Id) // Remove client from connections map
+				client.Hub.Unlock()
 				fmt.Println("Connection closed abruptly by", connection.RemoteAddr())
 				closeMessage := &dto.Message{
 					MessageType: "CLOSE",
-					UserName:    client.username,
-					ID:          client.id,
+					UserName:    client.Username,
+					ID:          client.Id,
 					Text:        "",
 					ReceiverID:  "",
 					Date:        "0",
 				}
-				client.hub.broadCastMessage <- *closeMessage // Broadcast close message
+				client.Hub.BroadCastMessage <- *closeMessage // Broadcast close message
 				return
 			}
 
@@ -60,40 +60,40 @@ func readWS(client *Client) {
 		switch chatMessage.MessageType {
 		case "CONNECT_PING":
 			log.Printf("Broadcasting user the message")
-			client.id = chatMessage.ID
-			client.username = chatMessage.UserName
-			client.hub.subcribe <- client              // Subscribe client to hub
-			client.hub.broadCastMessage <- chatMessage // Broadcast the message
+			client.Id = chatMessage.ID
+			client.Username = chatMessage.UserName
+			client.Hub.Subcribe <- client              // Subscribe client to hub
+			client.Hub.BroadCastMessage <- chatMessage // Broadcast the message
 		case "BROADCAST":
 			log.Printf("Broadcasting")
-			client.hub.broadCastMessage <- chatMessage // Broadcast the message
+			client.Hub.BroadCastMessage <- chatMessage // Broadcast the message
 		case "ACK":
 			log.Printf("Received ACK")
-			client.hub.connectionsMap[chatMessage.ReceiverID].message <- chatMessage // Send ACK to receiver
+			client.Hub.ConnectionsMap[chatMessage.ReceiverID].Message <- chatMessage // Send ACK to receiver
 		case "CHAT_MESSAGE":
-			client.hub.connectionsMap[chatMessage.ReceiverID].message <- chatMessage // Send chat message to receiver
+			client.Hub.ConnectionsMap[chatMessage.ReceiverID].Message <- chatMessage // Send chat message to receiver
 		}
 	}
 }
 
 // WriteMessage handles writing messages to the WebSocket connection of a client.
 func WriteMessage(client *Client) {
-	chatHandler := databases.ChatHandler{DBServer: client.hub.DB}
+	chatHandler := databases.ChatHandler{DBServer: client.Hub.DB}
 	defer func() {
-		client.hub.unsubcribe <- client // Unsubscribe the client from the hub
-		err := client.conn.Close()      // Close the WebSocket connection
+		client.Hub.Unsubcribe <- client // Unsubscribe the client from the hub
+		err := client.Conn.Close()      // Close the WebSocket connection
 		if err != nil {
 			return
 		}
 	}()
 	for {
 		select {
-		case mess := <-client.message: // Receive message from channel
+		case mess := <-client.Message: // Receive message from channel
 			client.Lock()
 			if mess.MessageType == "ACK" {
 				log.Printf("Received ACK %s -> %s , Status : %s ", mess.ID, mess.ReceiverID, mess.MessageDeliveryStatus)
 				byteMessage, _ := json.Marshal(mess)                                // Marshal message to JSON
-				err := client.conn.WriteMessage(websocket.TextMessage, byteMessage) // Write message to WebSocket
+				err := client.Conn.WriteMessage(websocket.TextMessage, byteMessage) // Write message to WebSocket
 				if err != nil {
 					return
 				}
@@ -102,12 +102,12 @@ func WriteMessage(client *Client) {
 				//TODO : this probably needs to be e moved to a service (eg :- Nessaging Service)
 				fmt.Print("chat id is ", mess.ChatId)
 				ack, _ := chatHandler.SendAcknowledgement(&mess)          // Send ACK for the message
-				client.hub.connectionsMap[ack.ReceiverID].message <- *ack // Send ACK to receiver
+				client.Hub.ConnectionsMap[ack.ReceiverID].Message <- *ack // Send ACK to receiver
 				byteMessage, err := json.Marshal(mess)                    // Marshal message to JSON
 				if err != nil {
 					log.Println("error while marshalling message", err)
 				}
-				err = client.conn.WriteMessage(websocket.TextMessage, byteMessage) // Write message to WebSocket
+				err = client.Conn.WriteMessage(websocket.TextMessage, byteMessage) // Write message to WebSocket
 				if err != nil {
 					return
 				}
@@ -117,8 +117,16 @@ func WriteMessage(client *Client) {
 	}
 }
 
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  2048,
+	WriteBufferSize: 2048,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
 // serveWS upgrades the HTTP server connection to the WebSocket protocol and starts read and write goroutines for the client.
-func serveWS(hub *SocketHub, w http.ResponseWriter, r *http.Request) {
+func ServeWS(hub *SocketHub, w http.ResponseWriter, r *http.Request) {
 	connection, _ := upgrader.Upgrade(w, r, nil) // Upgrade the HTTP connection to WebSocket
 	client := newClient(connection, hub)
 	// Individual client threads to read and write from socket

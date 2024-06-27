@@ -3,7 +3,7 @@ package main
 import (
 	databases "TCPServer/internal/database"
 	servers "TCPServer/internal/server"
-	apihandler "TCPServer/internal/server/APIHandler"
+	apihandler "TCPServer/internal/server/apihandler"
 	"os"
 	"os/signal"
 	"sync"
