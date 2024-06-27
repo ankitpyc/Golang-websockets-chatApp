@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"gorm.io/gorm/logger"
 )
 
 // newSocketHub initializes a new SocketHub and returns a pointer to it.
@@ -50,7 +49,7 @@ func (hub *SocketHub) StartSocketHub() {
 	for {
 		select {
 		case client := <-hub.Subcribe:
-			log.Println(logger.Blue, "client subscribed : "+client.Id)
+			fmt.Println("Client is being subscribed ", client.Id)
 			client.Hub.Lock()
 			hub.ConnectionsMap[client.Id] = client // Add client to connections map
 			client.Hub.Unlock()
@@ -59,7 +58,7 @@ func (hub *SocketHub) StartSocketHub() {
 			client.Hub.Lock()
 			delete(hub.ConnectionsMap, client.Id) // Remove client from connections map
 			_ = client.Conn.Close()
-			client.Hub.Lock()
+			client.Hub.Unlock()
 			// Close the client's WebSocket connection
 		case messages := <-hub.BroadCastMessage:
 			sendBroadCastMessage(hub, messages) // Broadcast the message to all clients
