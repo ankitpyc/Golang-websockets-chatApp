@@ -3,11 +3,14 @@ package servers
 import (
 	databases "TCPServer/internal/database/handlers"
 	dto "TCPServer/internal/domain/dto"
+	cache "TCPServer/internal/redis-cache"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -58,22 +61,38 @@ func readWS(client *Client) {
 			fmt.Print(err)
 			os.Exit(0)
 		}
-		switch chatMessage.MessageType {
-		case "CONNECT_PING":
-			log.Printf("Broadcasting user the message")
-			client.Id = chatMessage.ID
-			client.Username = chatMessage.UserName
-			client.Hub.Subcribe <- client              // Subscribe client to hub
-			client.Hub.BroadCastMessage <- chatMessage // Broadcast the message
-		case "BROADCAST":
-			log.Printf("Broadcasting")
-			client.Hub.BroadCastMessage <- chatMessage // Broadcast the message
-		case "ACK":
-			log.Printf("Received ACK")
-			client.Hub.ConnectionsMap[chatMessage.ReceiverID].Message <- chatMessage // Send ACK to receiver
-		case "CHAT_MESSAGE":
-			client.Hub.ConnectionsMap[chatMessage.ReceiverID].Message <- chatMessage // Send chat message to receiver
+		// for example few cases you need to publish the messages as well as self consume it
+		if PublishMessageType(chatMessage) || !isUserConnected(chatMessage, client) {
+			ct, _ := context.WithTimeout(client.CacheClient.Ctx, 20*time.Millisecond)
+			client.CacheClient.Cache.Publish(ct, "chatMessage", chatMessage)
 		}
+		if PublishMessageType(chatMessage) || isUserConnected(chatMessage, client) {
+			HandleMessages(client, chatMessage)
+		}
+
+	}
+}
+
+func PublishMessageType(chatMessage dto.Message) bool {
+	return (chatMessage.MessageType == "CONNECT_PING" || chatMessage.MessageType == "BROADCAST")
+}
+
+func HandleMessages(client *Client, chatMessage dto.Message) {
+	switch chatMessage.MessageType {
+	case "CONNECT_PING":
+		log.Printf("Broadcasting user the message")
+		client.Id = chatMessage.ID
+		client.Username = chatMessage.UserName
+		client.Hub.Subcribe <- client              // Subscribe client to hub
+		client.Hub.BroadCastMessage <- chatMessage // Broadcast the message
+	case "BROADCAST":
+		log.Printf("Broadcasting")
+		client.Hub.BroadCastMessage <- chatMessage // Broadcast the message
+	case "ACK":
+		log.Printf("Received ACK")
+		client.Hub.ConnectionsMap[chatMessage.ReceiverID].Message <- chatMessage // Send ACK to receiver
+	case "CHAT_MESSAGE":
+		client.Hub.ConnectionsMap[chatMessage.ReceiverID].Message <- chatMessage // Send chat message to receiver
 	}
 }
 
@@ -119,6 +138,14 @@ func WriteMessage(client *Client) {
 	}
 }
 
+func isUserConnected(mess dto.Message, client *Client) bool {
+	_, ok := client.Hub.ConnectionsMap[mess.ReceiverID]
+	if !ok {
+		fmt.Printf("User :-> %s is not connected \n", mess.ReceiverID)
+	}
+	return ok
+}
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  2048,
 	WriteBufferSize: 2048,
@@ -130,8 +157,19 @@ var upgrader = websocket.Upgrader{
 // serveWS upgrades the HTTP server connection to the WebSocket protocol and starts read and write goroutines for the client.
 func ServeWS(hub *SocketHub, w http.ResponseWriter, r *http.Request) {
 	connection, _ := upgrader.Upgrade(w, r, nil) // Upgrade the HTTP connection to WebSocket
-	client := newClient(connection, hub)
+	cacheClient := cache.NewCacheClient()
+	client := newClient(connection, hub, cacheClient)
+	go SubscribeToChannel(cacheClient, client)
 	// Individual client threads to read and write from socket
 	go readWS(client)       // Start read goroutine
 	go WriteMessage(client) // Start write goroutine
+}
+
+func SubscribeToChannel(cacheClient *cache.CacheClient, client *Client) {
+	for redisMsg := range cacheClient.Messages {
+		log.Println("Received message from Redis:", redisMsg.Payload)
+		var message dto.Message
+		json.Unmarshal([]byte(redisMsg.Payload), &message)
+		HandleMessages(client, message)
+	}
 }

@@ -1,6 +1,7 @@
 package servers
 
 import (
+	models "TCPServer/internal/database"
 	dto "TCPServer/internal/domain/dto"
 
 	"encoding/json"
@@ -12,13 +13,16 @@ import (
 )
 
 // newSocketHub initializes a new SocketHub and returns a pointer to it.
-func NewSocketHub() SocketHub {
-	return SocketHub{
+func NewSocketHub(db *models.DBServer) SocketHub {
+
+	shub := SocketHub{
 		Unsubcribe:       make(chan *Client),       // Channel for unsubscribing clients
 		Subcribe:         make(chan *Client),       // Channel for subscribing clients
 		BroadCastMessage: make(chan dto.Message),   // Channel for broadcasting messages
 		ConnectionsMap:   make(map[string]*Client), // Map to hold client connections
 	}
+	shub.DB = db
+	return shub
 }
 
 // notifyOnlineUsers periodically sends a "CONNECT_PING" message to all connected clients.

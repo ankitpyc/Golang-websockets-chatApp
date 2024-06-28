@@ -10,7 +10,7 @@ import (
 
 var redisClient *redis.Client
 
-func InitRedisClient() {
+func InitRedisClient() *redis.Client {
 	var ctx = context.Background()
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
@@ -18,6 +18,7 @@ func InitRedisClient() {
 		DB:       0,  // use default DB
 	})
 	redisClient.Ping(ctx)
+	return redisClient
 }
 
 func GetUserWS(ctx context.Context, userId string) {
@@ -35,5 +36,4 @@ func SetUserWS(ctx context.Context, conn net.Conn, userId string) {
 		panic(err)
 	}
 	fmt.Println("Set value Successfully.")
-
 }
